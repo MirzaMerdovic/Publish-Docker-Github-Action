@@ -35,20 +35,25 @@ function main() {
     useBuildCache
   fi
 
-  DOCKERNAME="${INPUT_NAME}:${INPUT_SEMVER}"
   DOCKER_LATEST="${INPUT_NAME}:latest"
   
-  echo "::debug file=entrypoint.sh,line=41::Starting docker build $BUILDPARAMS -t ${DOCKERNAME} ${CONTEXT}"
-  docker build $BUILDPARAMS -t ${DOCKERNAME} ${CONTEXT}
-  echo "::debug file=entrypoint.sh,line=41::Finished build"
+  echo "::debug file=entrypoint.sh,line=40::Starting docker build $BUILDPARAMS -t ${DOCKER_LATEST} ${CONTEXT}"
+  docker build $BUILDPARAMS -t ${DOCKER_LATEST} ${CONTEXT}
+  echo "::debug file=entrypoint.sh,line=41::Finished building ${DOCKER_LATEST}"
+  
+  echo "::debug file=entrypoint.sh,line=45::Starting docker push ${DOCKER_LATEST}"
+  docker push ${DOCKER_LATEST}
+  echo "::debug file=entrypoint.sh,line=57::Finished pushing ${DOCKER_LATEST}"
+  
+  DOCKERNAME="${INPUT_NAME}:${INPUT_SEMVER}"
   
   echo "::debug file=entrypoint.sh,line=45::Starting docker tag ${DOCKER_LATEST} ${DOCKERNAME}"
   docker tag ${DOCKER_LATEST} ${DOCKERNAME}
-  echo "::debug file=entrypoint.sh,line=47::Finished tag"
+  echo "::debug file=entrypoint.sh,line=47::Finished tagging ${DOCKER_LATEST} ${DOCKERNAME}"
 
   echo "::debug file=entrypoint.sh,line=49::Starting docker push ${DOCKERNAME}"
   docker push ${DOCKERNAME}
-  echo "::debug file=entrypoint.sh,line=51::Finished push"
+  echo "::debug file=entrypoint.sh,line=51::Finished pushing ${DOCKERNAME}"
 
   if [ "${INPUT_SEMVER}" != "latest" ]; then
     MAJOR="$(echo ${INPUT_SEMVER} | cut -d'.' -f1)"
@@ -57,19 +62,19 @@ function main() {
 	
 	echo "::debug file=entrypoint.sh,line=58::Starting docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}"
 	docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}
-    echo "::debug file=entrypoint.sh,line=60::Finished tag"
+    echo "::debug file=entrypoint.sh,line=60::Finished tagging ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}"
 	
 	echo "::debug file=entrypoint.sh,line=62::Starting docker push ${INPUT_NAME}:${MAJOR}"
 	docker push ${INPUT_NAME}:${MAJOR}
-	echo "::debug file=entrypoint.sh,line=64::Finished push"
+	echo "::debug file=entrypoint.sh,line=64::Finished pushing ${INPUT_NAME}:${MAJOR}"
 	
     echo "::debug file=entrypoint.sh,line=66::Starting docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}.${MINOR}"
 	docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}.${MINOR}
-	echo "::debug file=entrypoint.sh,line=68::Finished tag"
+	echo "::debug file=entrypoint.sh,line=68::Finished tagging ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}.${MINOR}"
 	
 	echo "::debug file=entrypoint.sh,line=70::Starting docker push ${INPUT_NAME}:${MAJOR}.${MINOR}"
 	docker push ${INPUT_NAME}:${MAJOR}.${MINOR}
-    echo "::debug file=entrypoint.sh,line=72::Finished push"
+    echo "::debug file=entrypoint.sh,line=72::Finished pushing ${INPUT_NAME}:${MAJOR}.${MINOR}"
   fi;
 
   echo ::set-output name=tag::"${INPUT_SEMVER}"
