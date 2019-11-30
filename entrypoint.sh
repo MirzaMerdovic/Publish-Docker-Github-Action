@@ -38,31 +38,38 @@ function main() {
   DOCKERNAME="${INPUT_NAME}:${INPUT_SEMVER}"
   DOCKER_LATEST="${INPUT_NAME}:latest"
   
-  echo ::set-output name=ImageName::$DOCKERNAME
-  echo ::set-output name=Latest::$DOCKER_LATEST
-  
-  # Build image with semver tag
+  echo "::debug file=entrypoint.sh,line=41::Starting docker build $BUILDPARAMS -t ${DOCKERNAME} ${CONTEXT}"
   docker build $BUILDPARAMS -t ${DOCKERNAME} ${CONTEXT}
+  echo "::debug file=entrypoint.sh,line=41::Finished build"
+  
+  echo "::debug file=entrypoint.sh,line=45::Starting docker tag ${DOCKER_LATEST} ${DOCKERNAME}"
   docker tag ${DOCKER_LATEST} ${DOCKERNAME}
-  # Push semver tag
+  echo "::debug file=entrypoint.sh,line=47::Finished tag"
+
+  echo "::debug file=entrypoint.sh,line=49::Starting docker push ${DOCKERNAME}"
   docker push ${DOCKERNAME}
+  echo "::debug file=entrypoint.sh,line=51::Finished push"
 
   if [ "${INPUT_SEMVER}" != "latest" ]; then
     MAJOR="$(echo ${INPUT_SEMVER} | cut -d'.' -f1)"
 	MINOR="$(echo ${INPUT_SEMVER} | cut -d'.' -f2)"
 	PATCH="$(echo ${INPUT_SEMVER} | cut -d'.' -f3)"
 	
-	# Tag and push major
+	echo "::debug file=entrypoint.sh,line=58::Starting docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}"
 	docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}
+    echo "::debug file=entrypoint.sh,line=60::Finished tag"
+	
+	echo "::debug file=entrypoint.sh,line=62::Starting docker push ${INPUT_NAME}:${MAJOR}"
 	docker push ${INPUT_NAME}:${MAJOR}
-
-    # Tag and push minor
+	echo "::debug file=entrypoint.sh,line=64::Finished push"
+	
+    echo "::debug file=entrypoint.sh,line=66::Starting docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}.${MINOR}"
 	docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}.${MINOR}
+	echo "::debug file=entrypoint.sh,line=68::Finished tag"
+	
+	echo "::debug file=entrypoint.sh,line=70::Starting docker push ${INPUT_NAME}:${MAJOR}.${MINOR}"
 	docker push ${INPUT_NAME}:${MAJOR}.${MINOR}
-    
-	# Tag and push patch
-	# docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}.${MINOR}.${PATCH}
-	# docker push ${INPUT_NAME}:${MAJOR}.${MINOR}.${PATCH}
+    echo "::debug file=entrypoint.sh,line=72::Finished push"
   fi;
 
   echo ::set-output name=tag::"${INPUT_SEMVER}"
