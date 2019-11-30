@@ -38,7 +38,7 @@ function main() {
   DOCKERNAME="${INPUT_NAME}:${INPUT_SEMVER}"
   # Build image with semver tag
   docker build $BUILDPARAMS -t ${DOCKERNAME} ${CONTEXT}
-  
+  docker tag ${DOCKER_LATEST} ${DOCKERNAME}
   # Push semver tag
   docker push ${DOCKERNAME}
 
@@ -47,9 +47,6 @@ function main() {
 	MINOR="$(echo ${INPUT_SEMVER} | cut -d'.' -f2)"
 	PATCH="$(echo ${INPUT_SEMVER} | cut -d'.' -f3)"
 	DOCKER_LATEST="${INPUT_NAME}:latest"
-    
-	# Push latest
-	docker push ${DOCKER_LATEST}
 	
 	# Tag and push major
 	docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}
@@ -60,8 +57,8 @@ function main() {
 	docker push ${INPUT_NAME}:${MAJOR}.${MINOR}
     
 	# Tag and push patch
-	docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}.${MINOR}.${PATCH}
-	docker push ${INPUT_NAME}:${MAJOR}.${MINOR}.${PATCH}
+	# docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}.${MINOR}.${PATCH}
+	# docker push ${INPUT_NAME}:${MAJOR}.${MINOR}.${PATCH}
   fi;
 
   echo ::set-output name=tag::"${INPUT_SEMVER}"
