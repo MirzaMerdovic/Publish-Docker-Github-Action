@@ -14,7 +14,7 @@ function main() {
   fi
 
   translateDockerTag
-  DOCKERNAME="${INPUT_NAME}:${TAG}"
+  DOCKERNAME="${INPUT_NAME}:${INPUT_SEMVER}"
 
   if uses "${INPUT_WORKDIR}"; then
     changeWorkingDirectory
@@ -38,11 +38,25 @@ function main() {
     useBuildCache
   fi
 
-  if usesBoolean "${INPUT_SNAPSHOT}"; then
-    pushWithSnapshot
-  else
-    pushWithoutSnapshot
-  fi
+  docker build $BUILDPARAMS -t ${DOCKERNAME} ${CONTEXT}
+  docker push ${DOCKERNAME}
+
+  if [ "${INPUT_SEMVER}" != "latest" ]; then
+    MAJOR="$(echo ${INPUT_SEMVER} | cut -d'.' -f1)"
+	MINOR="$(echo ${INPUT_SEMVER} | cut -d'.' -f2)"
+	PATCH="$(echo ${INPUT_SEMVER} | cut -d'.' -f3)"
+	DOCKER_LATEST="${INPUT_NAME}:latest"
+
+	docker tag ${INPUT_NAME}:latest ${INPUT_NAME}:${MAJOR}
+	docker push ${INPUT_NAME}:${MAJOR}
+
+	docker tag ${INPUT_NAME}:latest ${INPUT_NAME}:${MAJOR}.${MINOR}
+	docker push ${INPUT_NAME}:${MAJOR}.${MINOR}
+
+	docker tag ${INPUT_NAME}:latest ${INPUT_NAME}:${MAJOR}.${MINOR}.${PATCH}
+	docker push ${INPUT_NAME}:${MAJOR}.${MINOR}.${PATCH}
+  fi;
+
   echo ::set-output name=tag::"${TAG}"
 
   docker logout

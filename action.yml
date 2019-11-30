@@ -35,6 +35,9 @@ inputs:
   tag_names:
     description: 'Use tag_names when you want to push tags/release by their git name'
     required: false
+  semver:
+    description: 'User semver if you want to push with semvar tags'
+    required: false
 outputs:
   tag:
     description: 'Is the tag, which was pushed'
