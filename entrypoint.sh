@@ -13,9 +13,6 @@ function main() {
     INPUT_NAME="${REGISTRY_NO_PROTOCOL}/${INPUT_NAME}"
   fi
 
-  translateDockerTag
-  DOCKERNAME="${INPUT_NAME}:${INPUT_SEMVER}"
-
   if uses "${INPUT_WORKDIR}"; then
     changeWorkingDirectory
   fi
@@ -38,7 +35,11 @@ function main() {
     useBuildCache
   fi
 
+  DOCKERNAME="${INPUT_NAME}:${INPUT_SEMVER}"
+  # Build image with semver tag
   docker build $BUILDPARAMS -t ${DOCKERNAME} ${CONTEXT}
+  
+  # Push semver tag
   docker push ${DOCKERNAME}
 
   if [ "${INPUT_SEMVER}" != "latest" ]; then
@@ -46,14 +47,20 @@ function main() {
 	MINOR="$(echo ${INPUT_SEMVER} | cut -d'.' -f2)"
 	PATCH="$(echo ${INPUT_SEMVER} | cut -d'.' -f3)"
 	DOCKER_LATEST="${INPUT_NAME}:latest"
-
-	docker tag ${INPUT_NAME}:latest ${INPUT_NAME}:${MAJOR}
+    
+	# Push latest
+	docker push ${DOCKER_LATEST}
+	
+	# Tag and push major
+	docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}
 	docker push ${INPUT_NAME}:${MAJOR}
 
-	docker tag ${INPUT_NAME}:latest ${INPUT_NAME}:${MAJOR}.${MINOR}
+    # Tag and push minor
+	docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}.${MINOR}
 	docker push ${INPUT_NAME}:${MAJOR}.${MINOR}
-
-	docker tag ${INPUT_NAME}:latest ${INPUT_NAME}:${MAJOR}.${MINOR}.${PATCH}
+    
+	# Tag and push patch
+	docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}.${MINOR}.${PATCH}
 	docker push ${INPUT_NAME}:${MAJOR}.${MINOR}.${PATCH}
   fi;
 
