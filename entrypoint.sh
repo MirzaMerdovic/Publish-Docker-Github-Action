@@ -37,6 +37,10 @@ function main() {
 
   DOCKERNAME="${INPUT_NAME}:${INPUT_SEMVER}"
   DOCKER_LATEST="${INPUT_NAME}:latest"
+  
+  echo ::set-output name=ImageName::$DOCKERNAME
+  echo ::set-output name=Latest::$DOCKER_LATEST
+  
   # Build image with semver tag
   docker build $BUILDPARAMS -t ${DOCKERNAME} ${CONTEXT}
   docker tag ${DOCKER_LATEST} ${DOCKERNAME}
