@@ -36,6 +36,7 @@ function main() {
   fi
 
   DOCKERNAME="${INPUT_NAME}:${INPUT_SEMVER}"
+  DOCKER_LATEST="${INPUT_NAME}:latest"
   # Build image with semver tag
   docker build $BUILDPARAMS -t ${DOCKERNAME} ${CONTEXT}
   docker tag ${DOCKER_LATEST} ${DOCKERNAME}
@@ -46,7 +47,6 @@ function main() {
     MAJOR="$(echo ${INPUT_SEMVER} | cut -d'.' -f1)"
 	MINOR="$(echo ${INPUT_SEMVER} | cut -d'.' -f2)"
 	PATCH="$(echo ${INPUT_SEMVER} | cut -d'.' -f3)"
-	DOCKER_LATEST="${INPUT_NAME}:latest"
 	
 	# Tag and push major
 	docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}
