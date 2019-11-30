@@ -57,7 +57,7 @@ function main() {
 	docker push ${INPUT_NAME}:${MAJOR}.${MINOR}.${PATCH}
   fi;
 
-  echo ::set-output name=tag::"${TAG}"
+  echo ::set-output name=tag::"${INPUT_SEMVER}"
 
   docker logout
 }
