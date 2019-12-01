@@ -105,9 +105,9 @@ teardown() {
 
   expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin
 /usr/local/bin/docker build --build-arg MY_FIRST --build-arg MY_SECOND -t my/repository:latest .
-/usr/local/bin/docker push my.Registry.io/my/repository:latest
-/usr/local/bin/docker tag my.Registry.io/my/repository:latest my.Registry.io/my/repository:latest
-/usr/local/bin/docker push my.Registry.io/my/repository:latest
+/usr/local/bin/docker push my/repository:latest
+/usr/local/bin/docker tag my/repository:latest my/repository:latest
+/usr/local/bin/docker push my/repository:latest
 /usr/local/bin/docker logout"
 }
 
