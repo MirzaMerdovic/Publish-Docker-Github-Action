@@ -98,6 +98,65 @@ teardown() {
 /usr/local/bin/docker logout"
 }
 
+@test "it uses buildargs for building, if configured" {
+  export INPUT_BUILDARGS='MY_FIRST,MY_SECOND'
+
+  run /entrypoint.sh
+
+  expectStdOut "
+::add-mask::MY_FIRST
+::add-mask::MY_SECOND
+::set-output name=tag::latest"
+
+  expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin
+/usr/local/bin/docker build --build-arg MY_FIRST --build-arg MY_SECOND -t my/repository:latest .
+/usr/local/bin/docker push my.Registry.io/my/repository:latest
+/usr/local/bin/docker tag my.Registry.io/my/repository:latest my.Registry.io/my/repository:latest
+/usr/local/bin/docker push my.Registry.io/my/repository:latest
+/usr/local/bin/docker logout"
+}
+
+@test "it errors when with.name was not set" {
+  unset INPUT_NAME
+
+  run /entrypoint.sh
+
+  local expected="Unable to find the name. Did you set with.name?"
+  echo $output
+  [ "$status" -eq 1 ]
+  echo "$output" | grep "$expected"
+}
+
+@test "it errors when with.username was not set" {
+  unset INPUT_USERNAME
+
+  run /entrypoint.sh
+
+  local expected="Unable to find the username. Did you set with.username?"
+  echo $output
+  [ "$status" -eq 1 ]
+  echo "$output" | grep "$expected"
+}
+
+@test "it errors when with.password was not set" {
+  unset INPUT_PASSWORD
+
+  run /entrypoint.sh
+
+  local expected="Unable to find the password. Did you set with.password?"
+  echo $output
+  [ "$status" -eq 1 ]
+  echo "$output" | grep "$expected"
+}
+
+@test "it errors when the working directory is configured but not present" {
+  export INPUT_WORKDIR='mySubDir'
+
+  run /entrypoint.sh
+
+  [ "$status" -eq 2 ]
+}
+
 function expectStdOut() {
   echo "Expected: |$1|
   Got: |$output|"
