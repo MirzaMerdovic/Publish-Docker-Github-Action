@@ -90,11 +90,11 @@ teardown() {
 
   run /entrypoint.sh
 
-  expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin my.Registry.io
+  expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin https://my.Registry.io
 /usr/local/bin/docker build -t my.Registry.io/my/repository:latest .
 /usr/local/bin/docker push my.Registry.io/my/repository:latest
-/usr/local/bin/docker tag my.Registry.io/my/repository:latest my.Registry.io/my/repository:
-/usr/local/bin/docker push my.Registry.io/my/repository:
+/usr/local/bin/docker tag my.Registry.io/my/repository:latest my.Registry.io/my/repository:latest
+/usr/local/bin/docker push my.Registry.io/my/repository:latest
 /usr/local/bin/docker logout"
 }
 
