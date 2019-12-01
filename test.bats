@@ -16,7 +16,6 @@ teardown() {
   unset INPUT_SEMVER
   unset INPUT_DOCKERFILE
   unset INPUT_REGISTRY
-  unset INPUT_PULL_REQUESTS
   unset MOCK_ERROR_CONDITION
 }
 
