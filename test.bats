@@ -22,13 +22,28 @@ teardown() {
 }
 
 @test "with semver it pushes tags using the semver version" {
-  export GITHUB_REF='refs/tags/myRelease'
   export INPUT_SEMVER="1.2.5"
 
   run /entrypoint.sh
 
   expectStdOut "
-::set-output name=tag::1.2.5"
+::debug file=entrypoint.sh::Starting docker build  -t my/repository:latest .
+::debug file=entrypoint.sh::Finished building my/repository:latest
+::debug file=entrypoint.sh::Starting docker push my/repository:latest
+::debug file=entrypoint.sh::Finished pushing my/repository:latest
+::debug file=entrypoint.sh::Starting docker tag my/repository:latest my/repository:1.2.5
+::debug file=entrypoint.sh::Finished tagging my/repository:latest my/repository:1.2.5
+::debug file=entrypoint.sh::Starting docker push my/repository:1.2.5
+::debug file=entrypoint.sh::Finished pushing my/repository:1.2.5
+::debug file=entrypoint.sh::Starting docker tag my/repository:latest my/repository:1
+::debug file=entrypoint.sh::Finished tagging my/repository:latest my/repository:1
+::debug file=entrypoint.sh::Starting docker push my/repository:1
+::debug file=entrypoint.sh::Finished pushing my/repository:1
+::debug file=entrypoint.sh::Starting docker tag my/repository:latest my/repository:1.2
+::debug file=entrypoint.sh::Finished tagging my/repository:latest my/repository:1.2
+::debug file=entrypoint.sh::Starting docker push my/repository:1.2
+::debug file=entrypoint.sh::Finished pushing my/repository:1.2
+::set-output name=tag::1.2.5|"
 
   expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin
 /usr/local/bin/docker build -t my/repository:myRelease .
@@ -41,10 +56,11 @@ teardown() {
 
   run /entrypoint.sh
 
-  expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin my.Registry.io
-/usr/local/bin/docker build -t my.Registry.io/my/repository:latest .
+  expectMockCalled "/usr/local/bin/docker build -t my.Registry.io/my/repository:latest .
 /usr/local/bin/docker push my.Registry.io/my/repository:latest
-/usr/local/bin/docker logout"
+/usr/local/bin/docker tag my.Registry.io/my/repository:latest my.Registry.io/my/repository:
+/usr/local/bin/docker push my.Registry.io/my/repository:
+/usr/local/bin/docker logout|"
 }
 
 @test "it pushes to another registry and is ok when the hostname is already present" {
