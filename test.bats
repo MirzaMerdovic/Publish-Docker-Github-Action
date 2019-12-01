@@ -75,10 +75,6 @@ teardown() {
 /usr/local/bin/docker push my/repository:latest
 /usr/local/bin/docker tag my/repository:latest my/repository:latest
 /usr/local/bin/docker push my/repository:latest
-/usr/local/bin/docker tag my/repository:latest my/repository:latest
-/usr/local/bin/docker push my/repository:latest
-/usr/local/bin/docker tag my/repository:latest my/repository:latest
-/usr/local/bin/docker push my/repository:latest
 /usr/local/bin/docker logout"
 }
 
