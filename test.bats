@@ -19,6 +19,47 @@ teardown() {
   unset MOCK_ERROR_CONDITION
 }
 
+@test "it errors when with.name was not set" {
+  unset INPUT_NAME
+
+  run /entrypoint.sh
+
+  local expected="Unable to find the name. Did you set with.name?"
+  echo $output
+  [ "$status" -eq 1 ]
+  echo "$output" | grep "$expected"
+}
+
+@test "it errors when with.username was not set" {
+  unset INPUT_USERNAME
+
+  run /entrypoint.sh
+
+  local expected="Unable to find the username. Did you set with.username?"
+  echo $output
+  [ "$status" -eq 1 ]
+  echo "$output" | grep "$expected"
+}
+
+@test "it errors when with.password was not set" {
+  unset INPUT_PASSWORD
+
+  run /entrypoint.sh
+
+  local expected="Unable to find the password. Did you set with.password?"
+  echo $output
+  [ "$status" -eq 1 ]
+  echo "$output" | grep "$expected"
+}
+
+@test "it errors when the working directory is configured but not present" {
+  export INPUT_WORKDIR='mySubDir'
+
+  run /entrypoint.sh
+
+  [ "$status" -eq 2 ]
+}
+
 @test "with semver it pushes tags using the semver version" {
   export INPUT_SEMVER="1.2.5"
 
@@ -117,47 +158,6 @@ teardown() {
 /usr/local/bin/docker build --build-arg MY_FIRST --build-arg MY_SECOND -t my/repository:latest .
 /usr/local/bin/docker push my/repository:latest
 /usr/local/bin/docker logout"
-}
-
-@test "it errors when with.name was not set" {
-  unset INPUT_NAME
-
-  run /entrypoint.sh
-
-  local expected="Unable to find the name. Did you set with.name?"
-  echo $output
-  [ "$status" -eq 1 ]
-  echo "$output" | grep "$expected"
-}
-
-@test "it errors when with.username was not set" {
-  unset INPUT_USERNAME
-
-  run /entrypoint.sh
-
-  local expected="Unable to find the username. Did you set with.username?"
-  echo $output
-  [ "$status" -eq 1 ]
-  echo "$output" | grep "$expected"
-}
-
-@test "it errors when with.password was not set" {
-  unset INPUT_PASSWORD
-
-  run /entrypoint.sh
-
-  local expected="Unable to find the password. Did you set with.password?"
-  echo $output
-  [ "$status" -eq 1 ]
-  echo "$output" | grep "$expected"
-}
-
-@test "it errors when the working directory is configured but not present" {
-  export INPUT_WORKDIR='mySubDir'
-
-  run /entrypoint.sh
-
-  [ "$status" -eq 2 ]
 }
 
 @test "it can set a custom context" {
