@@ -30,21 +30,27 @@ function main() {
   fi
 
   DOCKER_LATEST="${INPUT_NAME}:latest"
-  
+
   echo "::debug file=entrypoint.sh::Starting docker build $BUILDPARAMS -t ${DOCKER_LATEST} ${CONTEXT}"
   docker build $BUILDPARAMS -t ${DOCKER_LATEST} ${CONTEXT}
   echo "::debug file=entrypoint.sh::Finished building ${DOCKER_LATEST}"
-  
+
   echo "::debug file=entrypoint.sh::Starting docker push ${DOCKER_LATEST}"
   docker push ${DOCKER_LATEST}
   echo "::debug file=entrypoint.sh::Finished pushing ${DOCKER_LATEST}"
-  
+
   if [ -z "${INPUT_SEMVER}" ]; then
     INPUT_SEMVER="latest"
   fi;
-  
+
+  if [ "${INPUT_SEMVER}" = "latest" ]; then
+	outputAndLogout
+
+	exit 0;
+  fi;
+
   DOCKERNAME="${INPUT_NAME}:${INPUT_SEMVER}"
-  
+
   echo "::debug file=entrypoint.sh::Starting docker tag ${DOCKER_LATEST} ${DOCKERNAME}"
   docker tag ${DOCKER_LATEST} ${DOCKERNAME}
   echo "::debug file=entrypoint.sh::Finished tagging ${DOCKER_LATEST} ${DOCKERNAME}"
@@ -52,11 +58,6 @@ function main() {
   echo "::debug file=entrypoint.sh::Starting docker push ${DOCKERNAME}"
   docker push ${DOCKERNAME}
   echo "::debug file=entrypoint.sh::Finished pushing ${DOCKERNAME}"
-
-  if [ "${INPUT_SEMVER}" = "latest" ]; then
-	docker logout
-	exit 0;
-  fi;
 
   MAJOR="$(echo ${INPUT_SEMVER} | cut -d'.' -f1)"
   MINOR="$(echo ${INPUT_SEMVER} | cut -d'.' -f2)"
@@ -78,9 +79,7 @@ function main() {
   docker push ${INPUT_NAME}:${MAJOR}.${MINOR}
   echo "::debug file=entrypoint.sh::Finished pushing ${INPUT_NAME}:${MAJOR}.${MINOR}"
 
-  echo ::set-output name=tag::"${INPUT_SEMVER}"
-
-  docker logout
+  outputAndLogout
 }
 
 
@@ -93,7 +92,7 @@ function sanitize() {
 
 function setInputRegistry() {
   REGISTRY_NO_PROTOCOL=$(echo "${INPUT_REGISTRY}" | sed -e 's/^https:\/\///g')
-  
+
   if uses "${INPUT_REGISTRY}" && ! isPartOfTheName "${REGISTRY_NO_PROTOCOL}"; then
     INPUT_NAME="${REGISTRY_NO_PROTOCOL}/${INPUT_NAME}"
   fi
@@ -124,6 +123,12 @@ function uses() {
 
 function usesBoolean() {
   [ ! -z "${1}" ] && [ "${1}" = "true" ]
+}
+
+function outputAndLogout() {
+  echo ::set-output name=tag::"${INPUT_SEMVER}"
+
+  docker logout
 }
 
 main
