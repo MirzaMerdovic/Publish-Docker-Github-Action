@@ -55,6 +55,24 @@ teardown() {
 /usr/local/bin/docker logout"
 }
 
+@test "without semver it pushes tags using the latest" {
+  export INPUT_SEMVER=""
+
+  run /entrypoint.sh
+
+  expectStdOut "
+::debug file=entrypoint.sh::Starting docker build  -t my/repository:latest .
+::debug file=entrypoint.sh::Finished building my/repository:latest
+::debug file=entrypoint.sh::Starting docker push my/repository:latest
+::debug file=entrypoint.sh::Finished pushing my/repository:latest
+::set-output name=tag::latest"
+
+  expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin
+/usr/local/bin/docker build -t my/repository:latest .
+/usr/local/bin/docker push my/repository:latest
+/usr/local/bin/docker logout"
+}
+
 @test "it pushes to another registry and adds the hostname" {
   export INPUT_REGISTRY='my.Registry.io'
 
