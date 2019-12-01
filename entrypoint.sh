@@ -39,6 +39,10 @@ function main() {
   docker push ${DOCKER_LATEST}
   echo "::debug file=entrypoint.sh::Finished pushing ${DOCKER_LATEST}"
   
+  if [ -z "${INPUT_SEMVER}" ]; then
+    INPUT_SEMVER="latest"
+  fi;
+  
   DOCKERNAME="${INPUT_NAME}:${INPUT_SEMVER}"
   
   echo "::debug file=entrypoint.sh::Starting docker tag ${DOCKER_LATEST} ${DOCKERNAME}"
@@ -49,9 +53,7 @@ function main() {
   docker push ${DOCKERNAME}
   echo "::debug file=entrypoint.sh::Finished pushing ${DOCKERNAME}"
 
-  if [ -z "${INPUT_SEMVER}" ]; then
-    INPUT_SEMVER="latest"
-	
+  if [ "${INPUT_SEMVER}" = "latest" ]; then
 	docker logout
 	exit 0;
   fi;

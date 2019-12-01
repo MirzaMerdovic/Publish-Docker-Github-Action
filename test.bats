@@ -66,7 +66,7 @@ teardown() {
 /usr/local/bin/docker build -t my.Registry.io/my/repository:latest .
 /usr/local/bin/docker push my.Registry.io/my/repository:latest
 /usr/local/bin/docker tag my.Registry.io/my/repository:latest my.Registry.io/my/repository:
-/usr/local/bin/docker push my.Registry.io/my/repository:
+/usr/local/bin/docker push my.Registry.io/my/repository:latest
 /usr/local/bin/docker logout"
 }
 
@@ -80,7 +80,7 @@ teardown() {
 /usr/local/bin/docker build -t my.Registry.io/my/repository:latest .
 /usr/local/bin/docker push my.Registry.io/my/repository:latest
 /usr/local/bin/docker tag my.Registry.io/my/repository:latest my.Registry.io/my/repository:
-/usr/local/bin/docker push my.Registry.io/my/repository:
+/usr/local/bin/docker push my.Registry.io/my/repository:latest
 /usr/local/bin/docker logout"
 }
 
