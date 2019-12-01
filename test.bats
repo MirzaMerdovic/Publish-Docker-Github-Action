@@ -70,7 +70,19 @@ teardown() {
 /usr/local/bin/docker logout"
 }
 
+@test "it pushes to another registry and is ok when the hostname is already present" {
+  export INPUT_REGISTRY='my.Registry.io'
+  export INPUT_NAME='my.Registry.io/my/repository'
 
+  run /entrypoint.sh
+
+  expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin my.Registry.io
+/usr/local/bin/docker build -t my.Registry.io/my/repository:latest .
+/usr/local/bin/docker push my.Registry.io/my/repository:latest
+/usr/local/bin/docker tag my.Registry.io/my/repository:latest my.Registry.io/my/repository:
+/usr/local/bin/docker push my.Registry.io/my/repository:
+/usr/local/bin/docker logout"
+}
 
 function expectStdOut() {
   echo "Expected: |$1|
