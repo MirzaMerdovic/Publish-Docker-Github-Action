@@ -7,7 +7,6 @@ setup(){
   ['/usr/local/bin/docker']=""
   ) > mockReturns
 
-  export GITHUB_REF='refs/heads/master'
   export INPUT_USERNAME='USERNAME'
   export INPUT_PASSWORD='PASSWORD'
   export INPUT_NAME='my/repository'
@@ -153,7 +152,6 @@ teardown() {
 }
 
 @test "it can set a custom context" {
-  export GITHUB_REF='refs/heads/master'
   export INPUT_CONTEXT='/myContextFolder'
 
   run /entrypoint.sh
