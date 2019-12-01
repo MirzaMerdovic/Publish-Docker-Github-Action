@@ -65,15 +65,10 @@ teardown() {
 ::debug file=entrypoint.sh::Finished building my/repository:latest
 ::debug file=entrypoint.sh::Starting docker push my/repository:latest
 ::debug file=entrypoint.sh::Finished pushing my/repository:latest
-::debug file=entrypoint.sh::Starting docker tag my/repository:latest my/repository:latest
-::debug file=entrypoint.sh::Finished tagging my/repository:latest my/repository:latest
-::debug file=entrypoint.sh::Starting docker push my/repository:latest
-::debug file=entrypoint.sh::Finished pushing my/repository:latest"
+::set-output name=tag::latest"
 
   expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin
 /usr/local/bin/docker build -t my/repository:latest .
-/usr/local/bin/docker push my/repository:latest
-/usr/local/bin/docker tag my/repository:latest my/repository:latest
 /usr/local/bin/docker push my/repository:latest
 /usr/local/bin/docker logout"
 }
@@ -85,8 +80,6 @@ teardown() {
 
   expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin my.Registry.io
 /usr/local/bin/docker build -t my.Registry.io/my/repository:latest .
-/usr/local/bin/docker push my.Registry.io/my/repository:latest
-/usr/local/bin/docker tag my.Registry.io/my/repository:latest my.Registry.io/my/repository:latest
 /usr/local/bin/docker push my.Registry.io/my/repository:latest
 /usr/local/bin/docker logout"
 }
@@ -100,8 +93,6 @@ teardown() {
   expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin my.Registry.io
 /usr/local/bin/docker build -t my.Registry.io/my/repository:latest .
 /usr/local/bin/docker push my.Registry.io/my/repository:latest
-/usr/local/bin/docker tag my.Registry.io/my/repository:latest my.Registry.io/my/repository:latest
-/usr/local/bin/docker push my.Registry.io/my/repository:latest
 /usr/local/bin/docker logout"
 }
 
@@ -114,8 +105,6 @@ teardown() {
   expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin https://my.Registry.io
 /usr/local/bin/docker build -t my.Registry.io/my/repository:latest .
 /usr/local/bin/docker push my.Registry.io/my/repository:latest
-/usr/local/bin/docker tag my.Registry.io/my/repository:latest my.Registry.io/my/repository:latest
-/usr/local/bin/docker push my.Registry.io/my/repository:latest
 /usr/local/bin/docker logout"
 }
 
@@ -126,8 +115,6 @@ teardown() {
 
   expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin
 /usr/local/bin/docker build --build-arg MY_FIRST --build-arg MY_SECOND -t my/repository:latest .
-/usr/local/bin/docker push my/repository:latest
-/usr/local/bin/docker tag my/repository:latest my/repository:latest
 /usr/local/bin/docker push my/repository:latest
 /usr/local/bin/docker logout"
 }
@@ -181,9 +168,7 @@ teardown() {
   expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin
 /usr/local/bin/docker build -t my/repository:latest /myContextFolder
 /usr/local/bin/docker push my/repository:latest
-/usr/local/bin/docker tag my/repository:latest my/repository:latest
-/usr/local/bin/docker push my/repository:latest
-/usr/local/bin/docker logout"
+/usr/local/bin/docker logou"
 }
 
 function expectStdOut() {
