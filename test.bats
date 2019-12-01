@@ -65,10 +65,19 @@ teardown() {
 ::debug file=entrypoint.sh::Finished building my/repository:latest
 ::debug file=entrypoint.sh::Starting docker push my/repository:latest
 ::debug file=entrypoint.sh::Finished pushing my/repository:latest
-::set-output name=tag::latest"
+::debug file=entrypoint.sh::Starting docker tag my/repository:latest my/repository:latest
+::debug file=entrypoint.sh::Finished tagging my/repository:latest my/repository:latest
+::debug file=entrypoint.sh::Starting docker push my/repository:latest
+::debug file=entrypoint.sh::Finished pushing my/repository:latest"
 
   expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin
 /usr/local/bin/docker build -t my/repository:latest .
+/usr/local/bin/docker push my/repository:latest
+/usr/local/bin/docker tag my/repository:latest my/repository:latest
+/usr/local/bin/docker push my/repository:latest
+/usr/local/bin/docker tag my/repository:latest my/repository:latest
+/usr/local/bin/docker push my/repository:latest
+/usr/local/bin/docker tag my/repository:latest my/repository:latest
 /usr/local/bin/docker push my/repository:latest
 /usr/local/bin/docker logout"
 }
