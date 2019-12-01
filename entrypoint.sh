@@ -8,10 +8,7 @@ function main() {
   sanitize "${INPUT_USERNAME}" "username"
   sanitize "${INPUT_PASSWORD}" "password"
 
-  REGISTRY_NO_PROTOCOL=$(echo "${INPUT_REGISTRY}" | sed -e 's/^https:\/\///g')
-  if uses "${INPUT_REGISTRY}" && ! isPartOfTheName "${REGISTRY_NO_PROTOCOL}"; then
-    INPUT_NAME="${REGISTRY_NO_PROTOCOL}/${INPUT_NAME}"
-  fi
+  setInputRegistry
 
   if uses "${INPUT_WORKDIR}"; then
     changeWorkingDirectory
@@ -31,56 +28,59 @@ function main() {
   if uses "${INPUT_CONTEXT}"; then
     CONTEXT="${INPUT_CONTEXT}"
   fi
-  if usesBoolean "${INPUT_CACHE}"; then
-    useBuildCache
-  fi
 
   DOCKER_LATEST="${INPUT_NAME}:latest"
   
-  echo "::debug file=entrypoint.sh,line=40::Starting docker build $BUILDPARAMS -t ${DOCKER_LATEST} ${CONTEXT}"
+  echo "::debug file=entrypoint.sh::Starting docker build $BUILDPARAMS -t ${DOCKER_LATEST} ${CONTEXT}"
   docker build $BUILDPARAMS -t ${DOCKER_LATEST} ${CONTEXT}
-  echo "::debug file=entrypoint.sh,line=41::Finished building ${DOCKER_LATEST}"
+  echo "::debug file=entrypoint.sh::Finished building ${DOCKER_LATEST}"
   
-  echo "::debug file=entrypoint.sh,line=45::Starting docker push ${DOCKER_LATEST}"
+  echo "::debug file=entrypoint.sh::Starting docker push ${DOCKER_LATEST}"
   docker push ${DOCKER_LATEST}
-  echo "::debug file=entrypoint.sh,line=57::Finished pushing ${DOCKER_LATEST}"
+  echo "::debug file=entrypoint.sh::Finished pushing ${DOCKER_LATEST}"
   
   DOCKERNAME="${INPUT_NAME}:${INPUT_SEMVER}"
   
-  echo "::debug file=entrypoint.sh,line=45::Starting docker tag ${DOCKER_LATEST} ${DOCKERNAME}"
+  echo "::debug file=entrypoint.sh::Starting docker tag ${DOCKER_LATEST} ${DOCKERNAME}"
   docker tag ${DOCKER_LATEST} ${DOCKERNAME}
-  echo "::debug file=entrypoint.sh,line=47::Finished tagging ${DOCKER_LATEST} ${DOCKERNAME}"
+  echo "::debug file=entrypoint.sh::Finished tagging ${DOCKER_LATEST} ${DOCKERNAME}"
 
-  echo "::debug file=entrypoint.sh,line=49::Starting docker push ${DOCKERNAME}"
+  echo "::debug file=entrypoint.sh::Starting docker push ${DOCKERNAME}"
   docker push ${DOCKERNAME}
-  echo "::debug file=entrypoint.sh,line=51::Finished pushing ${DOCKERNAME}"
+  echo "::debug file=entrypoint.sh::Finished pushing ${DOCKERNAME}"
 
-  if [ "${INPUT_SEMVER}" != "latest" ]; then
-    MAJOR="$(echo ${INPUT_SEMVER} | cut -d'.' -f1)"
-	MINOR="$(echo ${INPUT_SEMVER} | cut -d'.' -f2)"
-	PATCH="$(echo ${INPUT_SEMVER} | cut -d'.' -f3)"
+  if [ -z "${INPUT_SEMVER}" ]; then
+    INPUT_SEMVER="latest"
 	
-	echo "::debug file=entrypoint.sh,line=58::Starting docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}"
-	docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}
-    echo "::debug file=entrypoint.sh,line=60::Finished tagging ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}"
-	
-	echo "::debug file=entrypoint.sh,line=62::Starting docker push ${INPUT_NAME}:${MAJOR}"
-	docker push ${INPUT_NAME}:${MAJOR}
-	echo "::debug file=entrypoint.sh,line=64::Finished pushing ${INPUT_NAME}:${MAJOR}"
-	
-    echo "::debug file=entrypoint.sh,line=66::Starting docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}.${MINOR}"
-	docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}.${MINOR}
-	echo "::debug file=entrypoint.sh,line=68::Finished tagging ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}.${MINOR}"
-	
-	echo "::debug file=entrypoint.sh,line=70::Starting docker push ${INPUT_NAME}:${MAJOR}.${MINOR}"
-	docker push ${INPUT_NAME}:${MAJOR}.${MINOR}
-    echo "::debug file=entrypoint.sh,line=72::Finished pushing ${INPUT_NAME}:${MAJOR}.${MINOR}"
+	docker logout
+	exit 0;
   fi;
+
+  MAJOR="$(echo ${INPUT_SEMVER} | cut -d'.' -f1)"
+  MINOR="$(echo ${INPUT_SEMVER} | cut -d'.' -f2)"
+  PATCH="$(echo ${INPUT_SEMVER} | cut -d'.' -f3)"
+
+  echo "::debug file=entrypoint.sh::Starting docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}"
+  docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}
+  echo "::debug file=entrypoint.sh::Finished tagging ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}"
+
+  echo "::debug file=entrypoint.sh::Starting docker push ${INPUT_NAME}:${MAJOR}"
+  docker push ${INPUT_NAME}:${MAJOR}
+  echo "::debug file=entrypoint.sh::Finished pushing ${INPUT_NAME}:${MAJOR}"
+
+  echo "::debug file=entrypoint.sh::Starting docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}.${MINOR}"
+  docker tag ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}.${MINOR}
+  echo "::debug file=entrypoint.sh::Finished tagging ${DOCKER_LATEST} ${INPUT_NAME}:${MAJOR}.${MINOR}"
+
+  echo "::debug file=entrypoint.sh::Starting docker push ${INPUT_NAME}:${MAJOR}.${MINOR}"
+  docker push ${INPUT_NAME}:${MAJOR}.${MINOR}
+  echo "::debug file=entrypoint.sh::Finished pushing ${INPUT_NAME}:${MAJOR}.${MINOR}"
 
   echo ::set-output name=tag::"${INPUT_SEMVER}"
 
   docker logout
 }
+
 
 function sanitize() {
   if [ -z "${1}" ]; then
@@ -89,42 +89,16 @@ function sanitize() {
   fi
 }
 
+function setInputRegistry() {
+  REGISTRY_NO_PROTOCOL=$(echo "${INPUT_REGISTRY}" | sed -e 's/^https:\/\///g')
+  
+  if uses "${INPUT_REGISTRY}" && ! isPartOfTheName "${REGISTRY_NO_PROTOCOL}"; then
+    INPUT_NAME="${REGISTRY_NO_PROTOCOL}/${INPUT_NAME}"
+  fi
+}
+
 function isPartOfTheName() {
   [ $(echo "${INPUT_NAME}" | sed -e "s/${1}//g") != "${INPUT_NAME}" ]
-}
-
-function translateDockerTag() {
-  local BRANCH=$(echo ${GITHUB_REF} | sed -e "s/refs\/heads\///g" | sed -e "s/\//-/g")
-  if hasCustomTag; then
-    TAG=$(echo ${INPUT_NAME} | cut -d':' -f2)
-    INPUT_NAME=$(echo ${INPUT_NAME} | cut -d':' -f1)
-  elif isOnMaster; then
-    TAG="latest"
-  elif isGitTag && usesBoolean "${INPUT_TAG_NAMES}"; then
-    TAG=$(echo ${GITHUB_REF} | sed -e "s/refs\/tags\///g")
-  elif isGitTag; then
-    TAG="latest"
-  elif isPullRequest; then
-    TAG="${GITHUB_SHA}"
-  else
-    TAG="${BRANCH}"
-  fi;
-}
-
-function hasCustomTag() {
-  [ $(echo "${INPUT_NAME}" | sed -e "s/://g") != "${INPUT_NAME}" ]
-}
-
-function isOnMaster() {
-  [ "${BRANCH}" = "master" ]
-}
-
-function isGitTag() {
-  [ $(echo "${GITHUB_REF}" | sed -e "s/refs\/tags\///g") != "${GITHUB_REF}" ]
-}
-
-function isPullRequest() {
-  [ $(echo "${GITHUB_REF}" | sed -e "s/refs\/pull\///g") != "${GITHUB_REF}" ]
 }
 
 function changeWorkingDirectory() {
@@ -142,34 +116,12 @@ function addBuildArgs() {
   done
 }
 
-function useBuildCache() {
-  if docker pull ${DOCKERNAME} 2>/dev/null; then
-    BUILDPARAMS="$BUILDPARAMS --cache-from ${DOCKERNAME}"
-  fi
-}
-
 function uses() {
   [ ! -z "${1}" ]
 }
 
 function usesBoolean() {
   [ ! -z "${1}" ] && [ "${1}" = "true" ]
-}
-
-function pushWithSnapshot() {
-  local TIMESTAMP=`date +%Y%m%d%H%M%S`
-  local SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-6)
-  local SNAPSHOT_TAG="${TIMESTAMP}${SHORT_SHA}"
-  local SHA_DOCKER_NAME="${INPUT_NAME}:${SNAPSHOT_TAG}"
-  docker build $BUILDPARAMS -t ${DOCKERNAME} -t ${SHA_DOCKER_NAME} ${CONTEXT}
-  docker push ${DOCKERNAME}
-  docker push ${SHA_DOCKER_NAME}
-  echo ::set-output name=snapshot-tag::"${SNAPSHOT_TAG}"
-}
-
-function pushWithoutSnapshot() {
-  docker build $BUILDPARAMS -t ${DOCKERNAME} ${CONTEXT}
-  docker push ${DOCKERNAME}
 }
 
 main
