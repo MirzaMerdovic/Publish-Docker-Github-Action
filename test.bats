@@ -103,11 +103,6 @@ teardown() {
 
   run /entrypoint.sh
 
-  expectStdOut "
-::add-mask::MY_FIRST
-::add-mask::MY_SECOND
-::set-output name=tag::latest"
-
   expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin
 /usr/local/bin/docker build --build-arg MY_FIRST --build-arg MY_SECOND -t my/repository:latest .
 /usr/local/bin/docker push my.Registry.io/my/repository:latest
