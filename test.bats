@@ -152,6 +152,20 @@ teardown() {
   [ "$status" -eq 2 ]
 }
 
+@test "it can set a custom context" {
+  export GITHUB_REF='refs/heads/master'
+  export INPUT_CONTEXT='/myContextFolder'
+
+  run /entrypoint.sh
+
+  expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin
+/usr/local/bin/docker build -t my/repository:latest /myContextFolder
+/usr/local/bin/docker push my/repository:latest
+/usr/local/bin/docker tag my/repository:latest my/repository:latest
+/usr/local/bin/docker push my/repository:latest
+/usr/local/bin/docker logout"
+}
+
 function expectStdOut() {
   echo "Expected: |$1|
   Got: |$output|"
