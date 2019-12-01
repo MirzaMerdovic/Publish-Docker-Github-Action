@@ -168,7 +168,7 @@ teardown() {
   expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin
 /usr/local/bin/docker build -t my/repository:latest /myContextFolder
 /usr/local/bin/docker push my/repository:latest
-/usr/local/bin/docker logou"
+/usr/local/bin/docker logout"
 }
 
 function expectStdOut() {
