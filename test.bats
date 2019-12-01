@@ -46,8 +46,14 @@ teardown() {
 ::set-output name=tag::1.2.5"
 
   expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin
-/usr/local/bin/docker build -t my/repository:myRelease .
-/usr/local/bin/docker push my/repository:myRelease
+/usr/local/bin/docker build -t my/repository:latest .
+/usr/local/bin/docker push my/repository:latest
+/usr/local/bin/docker tag my/repository:latest my/repository:1.2.5
+/usr/local/bin/docker push my/repository:1.2.5
+/usr/local/bin/docker tag my/repository:latest my/repository:1
+/usr/local/bin/docker push my/repository:1
+/usr/local/bin/docker tag my/repository:latest my/repository:1.2
+/usr/local/bin/docker push my/repository:1.2
 /usr/local/bin/docker logout"
 }
 
@@ -56,7 +62,8 @@ teardown() {
 
   run /entrypoint.sh
 
-  expectMockCalled "/usr/local/bin/docker build -t my.Registry.io/my/repository:latest .
+  expectMockCalled "/usr/local/bin/docker login -u USERNAME --password-stdin my.Registry.io
+/usr/local/bin/docker build -t my.Registry.io/my/repository:latest .
 /usr/local/bin/docker push my.Registry.io/my/repository:latest
 /usr/local/bin/docker tag my.Registry.io/my/repository:latest my.Registry.io/my/repository:
 /usr/local/bin/docker push my.Registry.io/my/repository:
